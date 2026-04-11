@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-text2podcast — Convert a Markdown or PDF file to an MP3 spoken-word file.
+text2podcast — Convert a Markdown, plain-text, or PDF file to an MP3 spoken-word file.
 
 Primary TTS: edge-tts  (Microsoft Edge TTS, free, requires internet)
 Fallback TTS: espeak-ng (offline, installed system-wide)
@@ -84,8 +84,11 @@ def tts_espeak(text: str, output_mp3: Path) -> None:
 
 def convert(input_path: Path, output_mp3: Path, voice: str, offline: bool) -> None:
     print(f"Reading: {input_path}")
-    if input_path.suffix.lower() == ".pdf":
+    suffix = input_path.suffix.lower()
+    if suffix == ".pdf":
         text = pdf_to_plaintext(input_path)
+    elif suffix == ".txt":
+        text = input_path.read_text(encoding="utf-8").strip()
     else:
         text = md_to_plaintext(input_path)
     print(f"Text length: {len(text)} characters")
@@ -104,7 +107,7 @@ def main() -> None:
     parser = argparse.ArgumentParser(
         description="Convert a Markdown or PDF file to a spoken-word MP3."
     )
-    parser.add_argument("input", type=Path, help="Path to the .md or .pdf file")
+    parser.add_argument("input", type=Path, help="Path to the .md, .txt, or .pdf file")
     parser.add_argument(
         "-o",
         "--output",
@@ -139,8 +142,8 @@ def main() -> None:
         print(f"Error: file not found: {args.input}", file=sys.stderr)
         sys.exit(1)
 
-    if args.input.suffix.lower() not in (".md", ".pdf"):
-        print(f"Error: unsupported file type '{args.input.suffix}' — use .md or .pdf", file=sys.stderr)
+    if args.input.suffix.lower() not in (".md", ".pdf", ".txt"):
+        print(f"Error: unsupported file type '{args.input.suffix}' — use .md, .txt, or .pdf", file=sys.stderr)
         sys.exit(1)
 
     output = args.output or args.input.with_suffix(".mp3")

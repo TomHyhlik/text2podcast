@@ -1,6 +1,6 @@
 # text2podcast
 
-A collection of CLI tools for converting Markdown and PDF documents into audio and PDF outputs.
+A collection of CLI tools for converting Markdown, plain-text, and PDF documents into audio and PDF outputs.
 
 ---
 
@@ -9,6 +9,7 @@ A collection of CLI tools for converting Markdown and PDF documents into audio a
 ### `text2podcast.py` — document to spoken-word MP3
 
 - **Convert Markdown (`.md`) files to MP3** — parses Markdown to clean plain text, then speaks it
+- **Convert plain-text (`.txt`) files to MP3** — reads the file as-is and converts it to audio
 - **Convert PDF (`.pdf`) files to MP3** — extracts text from each page and converts it to audio
 - **High-quality neural voices (online)** — uses Microsoft Edge TTS (`edge-tts`) with ~400 voices across many languages; no API key required
 - **Offline fallback** — uses `espeak-ng` + `lame` when no internet is available; lower quality but fully local
@@ -31,13 +32,14 @@ A collection of CLI tools for converting Markdown and PDF documents into audio a
 
 **text2podcast.py:**
 ```
-.md / .pdf  →  plain text  →  TTS engine  →  .mp3
+.md / .txt / .pdf  →  plain text  →  TTS engine  →  .mp3
 ```
 
 | Step | Tool | Purpose |
 |------|------|---------|
 | Markdown → HTML | Python `markdown` library | Parse and render `.md` |
 | HTML → plain text | `beautifulsoup4` | Strip tags, produce readable text |
+| Plain text | _(read directly)_ | `.txt` files are used as-is |
 | PDF → plain text | `pymupdf` | Extract text from `.pdf` files |
 | Text → MP3 (online) | `edge-tts` | Microsoft Edge TTS, free, high-quality neural voices |
 | Text → WAV (offline) | `espeak-ng` | System TTS, no internet required |
@@ -84,6 +86,7 @@ pip install -r requirements.txt
 ```bash
 # Basic — output MP3 next to input file (online, neural voice)
 .venv/bin/python text2podcast.py your_file.md
+.venv/bin/python text2podcast.py your_file.txt
 .venv/bin/python text2podcast.py your_file.pdf
 
 # Specify output path

@@ -1,22 +1,52 @@
 # text2podcast
 
-Convert any Markdown (`.md`) file into a spoken-word MP3 file using free tools.
+A collection of CLI tools for converting Markdown and PDF documents into audio and PDF outputs.
+
+---
+
+## What it can do
+
+### `text2podcast.py` — document to spoken-word MP3
+
+- **Convert Markdown (`.md`) files to MP3** — parses Markdown to clean plain text, then speaks it
+- **Convert PDF (`.pdf`) files to MP3** — extracts text from each page and converts it to audio
+- **High-quality neural voices (online)** — uses Microsoft Edge TTS (`edge-tts`) with ~400 voices across many languages; no API key required
+- **Offline fallback** — uses `espeak-ng` + `lame` when no internet is available; lower quality but fully local
+- **Choose any voice** — pass `--voice en-GB-SoniaNeural` (or any other) to pick a specific voice
+- **List all available voices** — run `--list-voices` to print the full list (~400 voices)
+- **Custom output path** — default is the same filename as input with `.mp3` extension; override with `-o`
+
+### `md2pdf.py` — Markdown to styled PDF
+
+- **Convert Markdown (`.md`) files to PDF** — renders to a clean, readable document
+- **No extra pip packages** — only requires the Python `markdown` library (already in `requirements.txt`) and Chrome/Chromium
+- **Styled output** — serif body font, code blocks with syntax highlighting background, tables, blockquotes, and headings with borders
+- **Full Markdown feature support** — tables, fenced code blocks, footnotes, table of contents, and attribute lists
+- **Custom output path** — default is the same filename as input with `.pdf` extension; override with `-o`
+- **Auto-detects Chrome or Chromium** — works with `google-chrome`, `google-chrome-stable`, `chromium-browser`, or `chromium`
 
 ---
 
 ## How it works
 
+**text2podcast.py:**
 ```
-.md file  →  plain text (pandoc / BeautifulSoup)  →  TTS engine  →  .mp3
+.md / .pdf  →  plain text  →  TTS engine  →  .mp3
 ```
 
 | Step | Tool | Purpose |
 |------|------|---------|
 | Markdown → HTML | Python `markdown` library | Parse and render `.md` |
 | HTML → plain text | `beautifulsoup4` | Strip tags, produce readable text |
+| PDF → plain text | `pymupdf` | Extract text from `.pdf` files |
 | Text → MP3 (online) | `edge-tts` | Microsoft Edge TTS, free, high-quality neural voices |
 | Text → WAV (offline) | `espeak-ng` | System TTS, no internet required |
 | WAV → MP3 (offline) | `lame` | Encode WAV to MP3 when using espeak-ng |
+
+**md2pdf.py:**
+```
+.md  →  Python markdown  →  styled HTML  →  Chrome headless  →  .pdf
+```
 
 ---
 
@@ -27,31 +57,21 @@ Convert any Markdown (`.md`) file into a spoken-word MP3 file using free tools.
 | Python 3.x | pre-installed on Ubuntu | Runtime |
 | `espeak-ng` | `sudo apt install espeak-ng` | Offline TTS fallback |
 | `lame` | `sudo apt install lame` | MP3 encoder for offline fallback |
-| `ffmpeg` | `sudo apt install ffmpeg` | General audio processing (available for future use) |
-
-> **Note:** `pandoc` was evaluated but is not required — Markdown is parsed
-> entirely via the Python `markdown` + `beautifulsoup4` stack.
+| Google Chrome / Chromium | `sudo apt install chromium-browser` | PDF rendering (`md2pdf.py`) |
 
 ---
 
 ## Setup
 
-### 1. Install system packages
-
 ```bash
-sudo apt install espeak-ng lame ffmpeg
-```
+# Install system packages
+sudo apt install espeak-ng lame chromium-browser
 
-### 2. Create a Python virtual environment
-
-```bash
+# Create and activate a Python virtual environment
 python3 -m venv .venv
 source .venv/bin/activate
-```
 
-### 3. Install Python dependencies
-
-```bash
+# Install Python dependencies
 pip install -r requirements.txt
 ```
 
@@ -59,105 +79,35 @@ pip install -r requirements.txt
 
 ## Usage
 
-### Basic (online, high-quality neural voice)
+### `text2podcast.py`
 
 ```bash
+# Basic — output MP3 next to input file (online, neural voice)
 .venv/bin/python text2podcast.py your_file.md
-```
+.venv/bin/python text2podcast.py your_file.pdf
 
-Produces `your_file.mp3` in the same directory.
-
-### Specify output path
-
-```bash
+# Specify output path
 .venv/bin/python text2podcast.py your_file.md -o output/episode1.mp3
-```
 
-### Choose a different voice
-
-```bash
+# Choose a different voice
 .venv/bin/python text2podcast.py your_file.md --voice en-GB-SoniaNeural
-```
 
-### List all available voices
-
-```bash
+# List all available voices (~400)
 .venv/bin/python text2podcast.py --list-voices
-```
 
-### Offline mode (no internet required)
-
-Uses `espeak-ng` for TTS and `lame` to encode to MP3. Lower quality but fully local.
-
-```bash
+# Offline mode (no internet required, lower quality)
 .venv/bin/python text2podcast.py your_file.md --offline
 ```
 
----
-
-## Python packages installed (`requirements.txt`)
-
-| Package | Version | Purpose |
-|---------|---------|---------|
-| `edge-tts` | 7.2.8 | Microsoft Edge TTS client |
-| `markdown` | 3.10.2 | Markdown → HTML parser |
-| `beautifulsoup4` | 4.14.3 | HTML → plain text extraction |
-| `aiohttp` | 3.13.4 | Async HTTP (dependency of edge-tts) |
-| `aiohappyeyeballs` | 2.6.1 | Async DNS (dependency of aiohttp) |
-| `aiosignal` | 1.4.0 | Async signal handling |
-| `attrs` | 26.1.0 | Data classes utility |
-| `certifi` | 2026.2.25 | TLS certificates |
-| `frozenlist` | 1.8.0 | Immutable list type |
-| `idna` | 3.11 | Internationalized domain names |
-| `multidict` | 6.7.1 | Multi-value dict (aiohttp) |
-| `propcache` | 0.4.1 | Property caching (aiohttp) |
-| `soupsieve` | 2.8.3 | CSS selector engine (bs4) |
-| `tabulate` | 0.10.0 | Table formatting (edge-tts CLI) |
-| `typing_extensions` | 4.15.0 | Backported typing hints |
-| `yarl` | 1.23.0 | URL parsing (aiohttp) |
-
----
-
----
-
-## Markdown to PDF (`md2pdf.py`)
-
-Convert any `.md` file to a styled PDF using Chrome headless — no extra pip packages required beyond what's already in `requirements.txt`.
-
-### System requirements
-
-| Package | Install command | Purpose |
-|---------|----------------|---------|
-| Google Chrome | `sudo apt install google-chrome-stable` | Headless PDF renderer |
-| *(or Chromium)* | `sudo apt install chromium-browser` | Alternative renderer |
-
-> Chrome/Chromium is the only additional system dependency. The Python `markdown` library is already in `requirements.txt`.
-
-### Usage
-
-**Basic — output PDF next to input file:**
+### `md2pdf.py`
 
 ```bash
+# Basic — output PDF next to input file
 .venv/bin/python md2pdf.py your_file.md
-```
 
-Produces `your_file.pdf` in the same directory.
-
-**Specify output path:**
-
-```bash
+# Specify output path
 .venv/bin/python md2pdf.py your_file.md -o /path/to/output.pdf
 ```
-
-### How it works
-
-```
-.md file  →  Python markdown library  →  styled HTML  →  Chrome headless  →  .pdf
-```
-
-1. Parses Markdown to HTML (supports tables, fenced code blocks, footnotes, TOC)
-2. Wraps the HTML with a clean CSS stylesheet (serif body font, code blocks, tables)
-3. Calls Chrome `--headless=new --print-to-pdf` on a temporary HTML file
 
 ---
 
@@ -166,10 +116,8 @@ Produces `your_file.pdf` in the same directory.
 ```
 text2podcast/
 ├── .venv/                  # Python virtual environment (not committed)
-├── text2podcast.py         # Main conversion script (MD → MP3)
-├── md2pdf.py               # MD → PDF conversion script
-├── sample.md               # Example input file
-├── sample.mp3              # Example output (generated)
+├── text2podcast.py         # MD/PDF → MP3 conversion
+├── md2pdf.py               # MD → PDF conversion
 ├── requirements.txt        # Python dependencies
 └── README.md               # This file
 ```

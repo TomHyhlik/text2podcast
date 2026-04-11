@@ -1,4 +1,5 @@
 aiohappyeyeballs==2.6.1
+pymupdf
 aiohttp==3.13.4
 aiosignal==1.4.0
 attrs==26.1.0

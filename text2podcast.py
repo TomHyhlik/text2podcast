@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-text2podcast — Convert a Markdown file to an MP3 spoken-word file.
+text2podcast — Convert a Markdown or PDF file to an MP3 spoken-word file.
 
 Primary TTS: edge-tts  (Microsoft Edge TTS, free, requires internet)
 Fallback TTS: espeak-ng (offline, installed system-wide)
@@ -39,6 +39,23 @@ def md_to_plaintext(md_path: Path) -> str:
     return text.strip()
 
 
+def pdf_to_plaintext(pdf_path: Path) -> str:
+    """Extract plain text from a PDF file using pymupdf."""
+    import fitz  # pymupdf
+
+    doc = fitz.open(str(pdf_path))
+    pages = []
+    for page in doc:
+        pages.append(page.get_text())
+    doc.close()
+
+    text = "\n\n".join(pages)
+    # Collapse excess whitespace / blank lines
+    text = re.sub(r"\n{3,}", "\n\n", text)
+    text = re.sub(r"[ \t]+", " ", text)
+    return text.strip()
+
+
 async def tts_edge(text: str, output_mp3: Path, voice: str) -> None:
     """Convert text to MP3 using edge-tts."""
     import edge_tts
@@ -65,9 +82,12 @@ def tts_espeak(text: str, output_mp3: Path) -> None:
     Path(wav_path).unlink(missing_ok=True)
 
 
-def convert(md_path: Path, output_mp3: Path, voice: str, offline: bool) -> None:
-    print(f"Reading: {md_path}")
-    text = md_to_plaintext(md_path)
+def convert(input_path: Path, output_mp3: Path, voice: str, offline: bool) -> None:
+    print(f"Reading: {input_path}")
+    if input_path.suffix.lower() == ".pdf":
+        text = pdf_to_plaintext(input_path)
+    else:
+        text = md_to_plaintext(input_path)
     print(f"Text length: {len(text)} characters")
 
     if offline:
@@ -77,14 +97,14 @@ def convert(md_path: Path, output_mp3: Path, voice: str, offline: bool) -> None:
         print(f"TTS engine: edge-tts  voice={voice}")
         asyncio.run(tts_edge(text, output_mp3, voice))
 
-    print(f"Output:  {output_mp3}")
+    print(f"Output: {output_mp3}")
 
 
 def main() -> None:
     parser = argparse.ArgumentParser(
-        description="Convert a Markdown file to a spoken-word MP3."
+        description="Convert a Markdown or PDF file to a spoken-word MP3."
     )
-    parser.add_argument("input", type=Path, help="Path to the .md file")
+    parser.add_argument("input", type=Path, help="Path to the .md or .pdf file")
     parser.add_argument(
         "-o",
         "--output",
@@ -117,6 +137,10 @@ def main() -> None:
 
     if not args.input.exists():
         print(f"Error: file not found: {args.input}", file=sys.stderr)
+        sys.exit(1)
+
+    if args.input.suffix.lower() not in (".md", ".pdf"):
+        print(f"Error: unsupported file type '{args.input.suffix}' — use .md or .pdf", file=sys.stderr)
         sys.exit(1)
 
     output = args.output or args.input.with_suffix(".mp3")

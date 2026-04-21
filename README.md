@@ -1,6 +1,6 @@
 # text2podcast
 
-A collection of CLI tools for converting Markdown, plain-text, and PDF documents into audio and PDF outputs.
+A collection of CLI tools for converting Markdown, plain-text, PDF, and EPUB documents into audio and PDF outputs.
 
 ---
 
@@ -11,6 +11,7 @@ A collection of CLI tools for converting Markdown, plain-text, and PDF documents
 - **Convert Markdown (`.md`) files to MP3** — parses Markdown to clean plain text, then speaks it
 - **Convert plain-text (`.txt`) files to MP3** — reads the file as-is and converts it to audio
 - **Convert PDF (`.pdf`) files to MP3** — extracts text from each page and converts it to audio
+- **Convert EPUB (`.epub`) files to MP3** — extracts text from all chapters and converts to audio
 - **High-quality neural voices (online)** — uses Microsoft Edge TTS (`edge-tts`) with ~400 voices across many languages; no API key required
 - **Offline fallback** — uses `espeak-ng` + `lame` when no internet is available; lower quality but fully local
 - **Choose any voice** — pass `--voice en-GB-SoniaNeural` (or any other) to pick a specific voice
@@ -32,7 +33,7 @@ A collection of CLI tools for converting Markdown, plain-text, and PDF documents
 
 **text2podcast.py:**
 ```
-.md / .txt / .pdf  →  plain text  →  TTS engine  →  .mp3
+.md / .txt / .pdf / .epub  →  plain text  →  TTS engine  →  .mp3
 ```
 
 | Step | Tool | Purpose |
@@ -41,6 +42,7 @@ A collection of CLI tools for converting Markdown, plain-text, and PDF documents
 | HTML → plain text | `beautifulsoup4` | Strip tags, produce readable text |
 | Plain text | _(read directly)_ | `.txt` files are used as-is |
 | PDF → plain text | `pymupdf` | Extract text from `.pdf` files |
+| EPUB → plain text | `ebooklib` + `beautifulsoup4` | Extract chapter text from `.epub` files |
 | Text → MP3 (online) | `edge-tts` | Microsoft Edge TTS, free, high-quality neural voices |
 | Text → WAV (offline) | `espeak-ng` | System TTS, no internet required |
 | WAV → MP3 (offline) | `lame` | Encode WAV to MP3 when using espeak-ng |
@@ -88,6 +90,7 @@ pip install -r requirements.txt
 .venv/bin/python text2podcast.py your_file.md
 .venv/bin/python text2podcast.py your_file.txt
 .venv/bin/python text2podcast.py your_file.pdf
+.venv/bin/python text2podcast.py your_file.epub
 
 # Specify output path
 .venv/bin/python text2podcast.py your_file.md -o output/episode1.mp3

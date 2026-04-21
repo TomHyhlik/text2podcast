@@ -39,6 +39,26 @@ def md_to_plaintext(md_path: Path) -> str:
     return text.strip()
 
 
+def epub_to_plaintext(epub_path: Path) -> str:
+    """Extract plain text from an EPUB file using ebooklib and BeautifulSoup."""
+    import ebooklib
+    from ebooklib import epub
+
+    book = epub.read_epub(str(epub_path), options={"ignore_ncx": True})
+    parts = []
+    for item in book.get_items_of_type(ebooklib.ITEM_DOCUMENT):
+        soup = BeautifulSoup(item.get_content(), "html.parser")
+        for tag in soup.find_all(["p", "li", "h1", "h2", "h3", "h4", "h5", "h6"]):
+            tag.insert_before("\n")
+            tag.insert_after("\n")
+        parts.append(soup.get_text())
+
+    text = "\n\n".join(parts)
+    text = re.sub(r"\n{3,}", "\n\n", text)
+    text = re.sub(r"[ \t]+", " ", text)
+    return text.strip()
+
+
 def pdf_to_plaintext(pdf_path: Path) -> str:
     """Extract plain text from a PDF file using pymupdf."""
     import fitz  # pymupdf
@@ -87,6 +107,8 @@ def convert(input_path: Path, output_mp3: Path, voice: str, offline: bool) -> No
     suffix = input_path.suffix.lower()
     if suffix == ".pdf":
         text = pdf_to_plaintext(input_path)
+    elif suffix == ".epub":
+        text = epub_to_plaintext(input_path)
     elif suffix == ".txt":
         text = input_path.read_text(encoding="utf-8").strip()
     else:
@@ -105,9 +127,9 @@ def convert(input_path: Path, output_mp3: Path, voice: str, offline: bool) -> No
 
 def main() -> None:
     parser = argparse.ArgumentParser(
-        description="Convert a Markdown or PDF file to a spoken-word MP3."
+        description="Convert a Markdown, plain-text, PDF, or EPUB file to a spoken-word MP3."
     )
-    parser.add_argument("input", type=Path, help="Path to the .md, .txt, or .pdf file")
+    parser.add_argument("input", type=Path, help="Path to the .md, .txt, .pdf, or .epub file")
     parser.add_argument(
         "-o",
         "--output",
@@ -142,8 +164,8 @@ def main() -> None:
         print(f"Error: file not found: {args.input}", file=sys.stderr)
         sys.exit(1)
 
-    if args.input.suffix.lower() not in (".md", ".pdf", ".txt"):
-        print(f"Error: unsupported file type '{args.input.suffix}' — use .md, .txt, or .pdf", file=sys.stderr)
+    if args.input.suffix.lower() not in (".md", ".pdf", ".txt", ".epub"):
+        print(f"Error: unsupported file type '{args.input.suffix}' — use .md, .txt, .pdf, or .epub", file=sys.stderr)
         sys.exit(1)
 
     output = args.output or args.input.with_suffix(".mp3")

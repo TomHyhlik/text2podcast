@@ -1,11 +1,11 @@
 ---
 name: text2podcast
-description: Converts Markdown, plain-text, or PDF files to MP3 audio, or converts Markdown to a styled PDF. Use this agent when the user wants to make a podcast, convert a document to audio or PDF, or list available TTS voices. Does NOT handle sending — use the send-file agent for that.
+description: Converts Markdown, plain-text, PDF, or EPUB files to MP3 audio, or converts Markdown to a styled PDF. Use this agent when the user wants to make a podcast, convert a document to audio or PDF, or list available TTS voices. Does NOT handle sending — use the send-file agent for that.
 ---
 
 # text2podcast
 
-Convert Markdown, plain-text, or PDF files to MP3 audio, or convert Markdown to a styled PDF.
+Convert Markdown, plain-text, PDF, or EPUB files to MP3 audio, or convert Markdown to a styled PDF.
 
 ## Tool paths
 
@@ -20,7 +20,7 @@ MD2PDF = /home/fuzz/Repos/text2podcast/md2pdf.py
 Default voice: `en-US-AriaNeural`. Output is placed next to the input file.
 
 ```bash
-/home/fuzz/Repos/text2podcast/.venv/bin/python /home/fuzz/Repos/text2podcast/text2podcast.py <file.md|file.txt|file.pdf>
+/home/fuzz/Repos/text2podcast/.venv/bin/python /home/fuzz/Repos/text2podcast/text2podcast.py <file.md|file.txt|file.pdf|file.epub>
 ```
 
 ## Convert to MP3 with a custom output path
@@ -62,6 +62,6 @@ Default voice: `en-US-AriaNeural`. Output is placed next to the input file.
 ## Notes
 
 - Output is placed next to the input file by default (same name, different extension)
-- MP3 conversion supports `.md`, `.txt`, and `.pdf` input
+- MP3 conversion supports `.md`, `.txt`, `.pdf`, and `.epub` input
 - PDF conversion supports `.md` input only
 - To send the output, use the `sender-tool:send-file` skill
